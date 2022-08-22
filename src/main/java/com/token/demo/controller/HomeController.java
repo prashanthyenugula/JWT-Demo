@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.token.demo.model.JwtRequest;
 import com.token.demo.model.JwtResponse;
+import com.token.demo.service.UserService;
 import com.token.demo.utility.JWTUtility;
 
 @RestController
@@ -21,6 +23,9 @@ public class HomeController {
 	
 	@Autowired
 	private AuthenticationManager authenticationManager;
+	
+	@Autowired
+	private UserService userService;
 	
 	@GetMapping("/")
 	public String home() {
@@ -38,7 +43,10 @@ public class HomeController {
 			throw new Exception("INVALID_CREDENTIALS", e);
 		}
 		
-		return null;
+		final UserDetails userDetails = userService.loadUserByUsername(jwtRequest.getUsername());
+		final String token = jwtUtility.generateToken(userDetails);
+		
+		return new JwtResponse(token);
 		
 	}
 
